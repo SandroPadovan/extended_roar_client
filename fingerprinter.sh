@@ -7,8 +7,8 @@
 #############		SCRIPT CONFIGURATION		##############
 ##############################################################
 # C2 server and port to push data
-server="<C2-IP>"
-port="<C2-Port>"
+server="192.168.1.50"
+port="5000"
 route="/fp/"
 mac=$( cat /sys/class/net/eth0/address | tr : _ ) # find MAC address and replace ":" with "_" for usage in route
 
@@ -152,8 +152,6 @@ do
 	#	PUSH to C2 server (and store locally)
 	finalOutput="$timeAccumulative,$timestamp,$seconds,$connectivity,${resourceSample}${temperatureSample}$sample"
 	dt=$(date +%Y-%m-%d_%H-%M-%S)
-	echo "$dt"
-	#echo "$finalOutput" >> "fp-$dt.txt"
 	newRate="$(cat ./rate.roar)"
 	lastRate=$([ -z "$newRate" ] && echo "$lastRate" || echo "$newRate") # do not assign empty newRate
 	#echo -e "\n-- $lastRate" >> "fp-$dt.txt" # -e enables backslash escapes
@@ -164,9 +162,9 @@ do
   then
     ((current++))
   fi
-  if [ "$current" -gt 0 ] && [ $(("$current"%10)) = 0 ] && [ "$res" -eq 201 ]
+  if [ "$res" -eq 201 ]
   then
-    echo "Sent $current fingerprints"
+    echo "$dt: Sent fingerprints to $server:$port"
   else
     echo "Request failed: $res"
   fi
