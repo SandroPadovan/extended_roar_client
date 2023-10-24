@@ -16,6 +16,8 @@ mac=$( cat /sys/class/net/eth0/address | tr : _ ) # find MAC address and replace
 temperatureMonitor=true
 #	Resource monitoring
 resourceMonitor=true
+# System call monitoring
+syscallMonitor=true
 # Time window per sample
 timeWindowSeconds=5
 
@@ -100,6 +102,13 @@ do
 		cpuTemperature=$(vcgencmd measure_temp)  # example "temp=80.6'C"
 	fi
 
+  if [ "$syscallMonitor" = true ]
+  then
+    date=`date "+%Y-%m-%d_%H:%M:%S"`;
+    path="_${current}_${date}";
+    timeout -s 1 ${timeWindowSeconds} perf trace -o /data/attack_setup/dataset/${path}.txt -e !nanosleep -T;
+  fi
+
 	##############################################################
 	#############	DATA EXTRACTION/CALCULATION	  ##############
 	##############################################################
@@ -148,15 +157,18 @@ do
 	newRate="$(cat ./rate.roar)"
 	lastRate=$([ -z "$newRate" ] && echo "$lastRate" || echo "$newRate") # do not assign empty newRate
 	#echo -e "\n-- $lastRate" >> "fp-$dt.txt" # -e enables backslash escapes
-	res=$(curl -sk -X POST -d "{\"fp\":[$finalOutput], \"rate\":$lastRate}" -H "Content-Type: application/json" "$server:$port$route$mac")
+	res=$(curl -sk -X POST -F "resource_fp={\"fp\":[$finalOutput], \"rate\":$lastRate};type=application/json"  -F "syscalls=@/data/attack_setup/dataset/${path}.txt;type=text/csv" "$server:$port$route$mac" -w "%{http_code}")
+  rm -rf /data/attack_setup/dataset/${path}.txt
 
   if [ "$limited" = true ]
   then
     ((current++))
   fi
-  if [ "$current" -gt 0 ] && [ $(("$current"%10)) = 0 ]
+  if [ "$current" -gt 0 ] && [ $(("$current"%10)) = 0 ] && [ "$res" -eq 201 ]
   then
     echo "Sent $current fingerprints"
+  else
+    echo "Request failed: $res"
   fi
 done
 
