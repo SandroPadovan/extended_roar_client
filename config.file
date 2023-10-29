@@ -5,3 +5,7 @@ rate=0
 [BURST]
 duration=s0
 pause=0
+
+[BENIGN_BEHAVIOR]
+behavior=normal
+duration=0

@@ -39,12 +39,15 @@ def update_existing_config(new_config: dict) -> None:
         config.read(config_path)
         config.add_section("GENERAL")
         config.add_section("BURST")
+        config.add_section("BENIGN_BEHAVIOR")
     else:
         config = get_config_from_file()
     config.set("GENERAL", "algo", new_config["algo"])
     config.set("GENERAL", "rate", new_config["rate"])
     config.set("BURST", "duration", new_config["burst_duration"])
     config.set("BURST", "pause", new_config["burst_pause"])
+    config.set("BENIGN_BEHAVIOR", "behavior", new_config["benign_behavior_behavior"])
+    config.set("BENIGN_BEHAVIOR", "duration", new_config["benign_behavior_duration"])
 
     with open(os.path.join(os.path.curdir, config_path), "w") as config_file:
         config.write(config_file)
