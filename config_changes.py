@@ -18,7 +18,7 @@ def execute_benign_behavior(path: str, duration: int = 0) -> None:
     :param duration: Duration in seconds, 0 for infinite execution
     :return: None
     """
-    call(f"{path} {duration}")
+    call([path, str(duration)])
 
 
 def listen_for_config_changes() -> None:
@@ -50,7 +50,7 @@ def listen_for_config_changes() -> None:
 
                         # start new benign behavior process according to new config
                         benign_proc = Process(target=execute_benign_behavior,
-                                              args=(f"./benign_behaviors/{new_config['benign_behavior_behavior']}.sh",
+                                              args=("./benign_behaviors/{}.sh".format(new_config['benign_behavior_behavior']),
                                                     new_config["benign_behavior_duration"]))
                         benign_proc.start()
                         BENIGN_PROCESSES.append(benign_proc)
