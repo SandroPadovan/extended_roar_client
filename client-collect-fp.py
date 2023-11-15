@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
-from multiprocessing import Process
-from subprocess import call
+from multiprocessing import Process, Queue
+from subprocess import Popen
+import os
+import signal
 
 from rwpoc import run
 from config_changes import listen_for_config_changes
@@ -18,22 +20,30 @@ def parse_args():
     return parser.parse_args()
 
 
-def collect_device_fingerprint(limit):
+def collect_device_fingerprint(limit, pid_queue):
     if limit > 0:
         """
         Remember: once the limit is reached the subprocess is terminated.
         However, the (parent) encryption process is still running to completion
         and will re-trigger the FP collection on the next iteration - up to the limit.
         """
-        call(["./fingerprinter.sh", "-n {}".format(limit)])
+        p = Popen(["./fingerprinter.sh", "-n {}".format(limit)])
     else:
-        call("./fingerprinter.sh")  # without option "-n <limit>", this will continuously collect FP
+        p = Popen("./fingerprinter.sh")
+    pid_queue.put(p.pid)
 
 
 def kill_process(proc):
     print("kill Process", proc)
     proc.terminate()
     proc.join()
+
+
+def kill_child_processes(pid_queue):
+    while not pid_queue.empty():
+        pid = pid_queue.get()
+        print("kill child process with pid {}".format(pid))
+        os.kill(pid, signal.SIGKILL)
 
 
 if __name__ == "__main__":
@@ -43,6 +53,7 @@ if __name__ == "__main__":
 
     # Start subprocess to integrate config changes
     procs = []
+    child_pids = Queue()
     proc_config = Process(target=listen_for_config_changes)
     procs.append(proc_config)
     proc_config.start()
@@ -53,7 +64,7 @@ if __name__ == "__main__":
         while True:
             # input("\nEnter: start encrypting")
 
-            proc_fp = Process(target=collect_device_fingerprint, args=(num_fp,))
+            proc_fp = Process(target=collect_device_fingerprint, args=(num_fp, child_pids))
             proc_fp.start()
             procs.append(proc_fp)
 
@@ -61,6 +72,7 @@ if __name__ == "__main__":
             print("\nENCRYPT")
 
             run(encrypt=True, absolute_paths=abs_paths)  # encrypt
+            kill_child_processes(child_pids)
             kill_process(proc_fp)
             procs.remove(proc_fp)
 
@@ -75,3 +87,4 @@ if __name__ == "__main__":
                 kill_process(proc)
             else:
                 print("Process", proc, "already dead.")
+        kill_child_processes(child_pids)
