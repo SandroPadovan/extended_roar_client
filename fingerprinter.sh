@@ -156,7 +156,7 @@ do
 	lastRate=$([ -z "$newRate" ] && echo "$lastRate" || echo "$newRate") # do not assign empty newRate
 	#echo -e "\n-- $lastRate" >> "fp-$dt.txt" # -e enables backslash escapes
 	res=$(curl -sk -X POST -F "resource_fp={\"fp\":[$finalOutput], \"rate\":$lastRate};type=application/json"  -F "syscalls=@/data/attack_setup/dataset/${path}.txt;type=text/csv" "$server:$port$route$mac" -w "%{http_code}")
-  rm -rf /data/attack_setup/dataset/${path}.txt
+  rm -rf /data/attack_setup/dataset/*
 
   if [ "$limited" = true ]
   then
