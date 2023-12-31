@@ -1,16 +1,13 @@
 # ROAR - Client
-Master Thesis on Ransomware Optimized with AI for Resource-constrained devices.\
-_The official title of this thesis is "AI-powered Ransomware to Optimize its Impact on IoT Spectrum Sensors"._
+Master thesis on Ransomware Optimized with AI for Resource-constrained devices.\
+_The official title of this thesis is "AI-powered Ransomware to Stay Hidden"._
 
-It is generally advised to first consult the corresponding report of this master thesis.
-The report motivates the thesis and introduces the required background.
-It further explains the development, and reasoning of the ransomware extension in great detail.
+This repository contains the RL Agent and command and control (C&C) part of the project.
+There is [another repository](https://github.com/SandroPadovan/extended_roar_server) for the RL Agent and command and control (C&C) part.
 
-This repository contains the underlying ransomware of ROAR.
-There is [another repository](https://github.com/jluech/roar_server) for the RL Agent and command and control (C&C) part.
-
-
-
+The master thesis extended a previous work, and the initial codebase of this project was adopted and extended
+from the original project by [jluech](https://github.com/jluech) under the MIT license.
+The original repository can be found [here](https://github.com/jluech/RansomAI/tree/master).
 
 
 ## Setup ROAR
@@ -43,6 +40,21 @@ On a side note: there is also a folder `dev/`.
 It should generally not concern you, as it contains old versions of the ransomware and ways of simulating the C2 server during development.
 
 
+## Additional Benign Behaviors
+
+There are two additional behaviors using Bash scripts.
+
+### Compression Behavior
+
+First, create a folder named `compression_files` and store some files as manipulation mass to be compressed.
+
+Run the script in the background: `./benign_behaviors/compression.sh &`
+
+### Package Installation Behavior
+
+No additional steps required here.
+
+Run the script in the background: `./benign_behaviors/installation.sh &`
 
 
 
